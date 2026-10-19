@@ -38,7 +38,8 @@ The app follows your system's light or dark theme.
 
 ## Installing on Windows
 
-Run `Countdown-Setup-1.0.0.exe`. It works offline (the app is inside it) and needs no administrator rights:
+Download `Countdown-Setup-<version>.exe` from the [Releases](https://github.com/Iarimanana/Countdown/releases)
+page and run it. It works offline (the app is inside it) and needs no administrator rights:
 
 1. Choose whether you want a desktop shortcut and whether Countdown opens at the end, then click **Installer**.
    **Modifier** changes the install folder (default: `%LOCALAPPDATA%\Programs\Countdown`).
@@ -53,8 +54,7 @@ shortcuts. It keeps the device list unless you tick **Supprimer aussi la liste d
 It only deletes files it installed, so anything else in the folder stays.
 
 Windows may show a SmartScreen warning ("Windows protected your PC") the first time, because the installer
-isn't code-signed. Click **More info → Run anyway**. Signing it with a code-signing certificate removes the
-warning.
+isn't code-signed yet (see [Code signing policy](#code-signing-policy)). Click **More info → Run anyway**.
 
 Advanced: `Countdown-Setup.exe --silent` installs with default choices and no window.
 `uninstall.exe --uninstall --silent` uninstalls and keeps the data.
@@ -174,8 +174,35 @@ SCREENSHOT_DIR=shots cargo test screenshots -- --ignored   # saves screenshots o
 SCREENSHOT_DIR=shots cargo test -p countdown-setup screenshots -- --ignored   # same for the installer
 ```
 
+## Code signing policy
+
+Releases aren't code-signed yet. We plan to sign them through the [SignPath Foundation](https://signpath.org),
+which offers free code signing to open source projects.
+
+Once that's in place, only these files are signed, built by GitHub Actions from this repository's source:
+`Countdown.exe`, and `Countdown-Setup-<version>.exe` (which is also installed as `uninstall.exe`). Nothing
+built elsewhere, and no third-party program, is signed with the project's certificate.
+
+Team roles:
+
+- Committers and reviewers: [Iarimanana](https://github.com/Iarimanana)
+- Approvers: [Iarimanana](https://github.com/Iarimanana)
+
+Every change to the source and the build scripts goes through this repository, and every signed release is
+approved by hand.
+
+### Privacy
+
+This program will not transfer any information to other networked systems unless specifically requested by
+the user or the person installing or operating it. The device list and settings stay on your computer, in the
+folder listed under [Things to know](#things-to-know).
+
 ## Fonts
 
 The app embeds [Atkinson Hyperlegible](https://www.brailleinstitute.org/freefont/) and Atkinson Hyperlegible Mono
 by the Braille Institute, under the SIL Open Font License (`assets/fonts/OFL.txt`). Emoji use egui's bundled
 Noto Emoji. Other scripts (Arabic, Chinese…) use the operating system's fonts.
+
+## License
+
+Countdown is free and open source, under the [MIT License](LICENSE). The fonts keep their own license (above).

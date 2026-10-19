@@ -3,11 +3,15 @@ members = [".", "installer"]
 
 [workspace.package]
 version = "1.0.0"
+license = "MIT"
+repository = "https://github.com/Iarimanana/Countdown"
 
 [package]
 name = "countdown"
 description = "Keeps track of how long each device may stay on the Wi-Fi"
 version.workspace = true
+license.workspace = true
+repository.workspace = true
 edition = "2024"
 
 [dependencies]
