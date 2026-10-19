@@ -3,6 +3,8 @@
 
 mod alerts;
 mod app;
+#[cfg_attr(not(windows), allow(dead_code))]
+mod app_id;
 mod i18n;
 mod instance;
 mod model;

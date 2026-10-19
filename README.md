@@ -49,9 +49,9 @@ page and run it. It works offline (the app is inside it) and needs no administra
 Running a newer installer later offers **Mettre à jour**. It replaces the app in the same folder and keeps the
 device list and settings. If Countdown is open, the installer asks you to close it and offers **Réessayer**.
 
-To uninstall, go to **Settings → Apps → Countdown → Uninstall**. The uninstaller removes the app and its
-shortcuts. It keeps the device list unless you tick **Supprimer aussi la liste des appareils et les réglages**.
-It only deletes files it installed, so anything else in the folder stays.
+To uninstall, go to **Settings → Apps → Countdown → Uninstall**. The uninstaller removes the app, its
+shortcuts and its notification registration. It keeps the device list unless you tick **Supprimer aussi la
+liste des appareils et les réglages**. It only deletes files it installed, so anything else in the folder stays.
 
 Windows may show a SmartScreen warning ("Windows protected your PC") the first time, because the installer
 isn't code-signed yet (see [Code signing policy](#code-signing-policy)). Click **More info → Run anyway**.
@@ -67,6 +67,12 @@ Advanced: `Countdown-Setup.exe --silent` installs with default choices and no wi
 - **Rappel:** how long to wait before alerting again if a device still hasn't been removed: 2, 5 (default),
   10, 15 or 30 minutes, or never.
 - **Tester l'alerte:** plays the chosen alert, so you can check the volume.
+
+Notifications on Windows come from **Countdown**, with its icon. If none appear, open **Settings → System →
+Notifications**, make sure notifications are on, and turn on **Countdown** in the list (it shows up there after
+its first notification). **Focus assist** (**Do not disturb** on Windows 11) also hides them while it's on.
+The installer registers the name and icon with Windows, so a `Countdown.exe` that was never installed sends
+its notifications as "Windows PowerShell".
 
 ## Things to know
 
@@ -158,7 +164,7 @@ With Wine installed, after `./build-windows.sh`:
 
 The script runs both test suites compiled for Windows. It then runs the real installer through install,
 update, an update refused while the app is open, and uninstall, checking the files, shortcuts and registry
-entry at each step. It uses its own Wine prefix in `target/wine-test` and turns off Wine's desktop
+entries at each step. It uses its own Wine prefix in `target/wine-test` and turns off Wine's desktop
 integration, so nothing appears on your real desktop or in your app menu.
 
 The UI tests run one at a time under Wine. Wine's DirectWrite crashes when several threads lay out text at

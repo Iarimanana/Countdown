@@ -34,6 +34,7 @@ U="$WINEPREFIX/drive_c/users/$USER"
 PROGRAMS="$U/AppData/Local/Programs/Countdown"
 START_MENU="$U/AppData/Roaming/Microsoft/Windows/Start Menu/Programs/Countdown.lnk"
 UNINSTALL_KEY='HKCU\Software\Microsoft\Windows\CurrentVersion\Uninstall\Countdown'
+APP_ID_KEY='HKCU\Software\Classes\AppUserModelId\Iarimanana.Countdown'
 
 echo "== Building the test programs for Windows"
 cargo zigbuild --target "$TARGET" --workspace --tests --message-format=json-render-diagnostics 2>/dev/null \
@@ -62,6 +63,7 @@ check "installs silently" "wine '$SETUP' --silent"
 check "app installed" "[ -f '$PROGRAMS/Countdown.exe' ] && [ -f '$PROGRAMS/uninstall.exe' ] && [ -f '$PROGRAMS/countdown.ico' ]"
 check "Start menu and desktop shortcuts" "[ -f '$START_MENU' ] && [ -f '$U/Desktop/Countdown.lnk' ]"
 check "listed in Apps & features" "wine reg query '$UNINSTALL_KEY' >/dev/null 2>&1"
+check "notifications registered as Countdown" "wine reg query '$APP_ID_KEY' /v DisplayName 2>/dev/null | grep -q Countdown"
 check "updates over itself" "wine '$SETUP' --silent"
 
 wine "$PROGRAMS/Countdown.exe" >/dev/null 2>&1 &
@@ -76,5 +78,6 @@ wineserver -w
 check "install folder removed" "[ ! -d '$PROGRAMS' ]"
 check "shortcuts removed" "[ ! -f '$START_MENU' ] && [ ! -f '$U/Desktop/Countdown.lnk' ]"
 check "Apps & features entry removed" "! wine reg query '$UNINSTALL_KEY' >/dev/null 2>&1"
+check "notification registration removed" "! wine reg query '$APP_ID_KEY' >/dev/null 2>&1"
 
 if [ "$FAILED" = 0 ]; then echo "All Windows checks passed."; else echo "Some Windows checks FAILED."; exit 1; fi
