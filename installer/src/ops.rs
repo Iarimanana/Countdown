@@ -52,6 +52,11 @@ pub trait System: Send + Sync {
     fn register(&self, entry: &UninstallEntry) -> io::Result<()>;
     /// Removes the "Apps & features" entry; succeeds if there is none.
     fn unregister(&self) -> io::Result<()>;
+    /// Registers Countdown's AppUserModelID with its name and `icon`, so its
+    /// notifications say "Countdown" instead of "Windows PowerShell".
+    fn register_app_id(&self, icon: &Path) -> io::Result<()>;
+    /// Removes that registration; succeeds if there is none.
+    fn unregister_app_id(&self) -> io::Result<()>;
     fn installed(&self) -> Option<Installed>;
     fn launch(&self, exe: &Path) -> io::Result<()>;
     /// Deletes `files`, then `dir` if it is empty, once this program has
@@ -183,6 +188,7 @@ pub fn install(
         size_kb: u32::try_from(size / 1024).unwrap_or(u32::MAX),
     })
     .map_err(io_err(Step::Registering))?;
+    sys.register_app_id(&icon).map_err(io_err(Step::Registering))?;
 
     progress(1.0, Step::Registering);
     Ok(())
@@ -216,6 +222,7 @@ pub fn uninstall(
         remove_if_present(&desktop.join(SHORTCUT)).map_err(io_err(Step::Removing))?;
     }
     sys.unregister().map_err(io_err(Step::Removing))?;
+    sys.unregister_app_id().map_err(io_err(Step::Removing))?;
     let dir = &paths.install_dir;
     for file in [APP_EXE, ICON_FILE, APP_EXE_PARTIAL] {
         remove_if_present(&dir.join(file)).map_err(|e| {
@@ -261,6 +268,8 @@ pub mod tests {
     pub struct FakeSystem {
         pub running: Mutex<bool>,
         pub entry: Mutex<Option<UninstallEntry>>,
+        /// The icon the notification identity was registered with.
+        pub app_id_icon: Mutex<Option<PathBuf>>,
         pub launched: Mutex<Vec<PathBuf>>,
         pub scheduled: Mutex<Vec<(Vec<PathBuf>, PathBuf)>>,
         pub exe: PathBuf,
@@ -279,6 +288,14 @@ pub mod tests {
         }
         fn unregister(&self) -> io::Result<()> {
             *self.entry.lock().unwrap() = None;
+            Ok(())
+        }
+        fn register_app_id(&self, icon: &Path) -> io::Result<()> {
+            *self.app_id_icon.lock().unwrap() = Some(icon.to_path_buf());
+            Ok(())
+        }
+        fn unregister_app_id(&self) -> io::Result<()> {
+            *self.app_id_icon.lock().unwrap() = None;
             Ok(())
         }
         fn installed(&self) -> Option<Installed> {
@@ -347,6 +364,7 @@ pub mod tests {
         assert_eq!(entry.install_dir, *dir);
         assert!(entry.uninstall_command.ends_with("uninstall.exe\" --uninstall"));
         assert!(entry.quiet_uninstall_command.ends_with("--uninstall --silent"));
+        assert_eq!(*e.sys.app_id_icon.lock().unwrap(), Some(dir.join(ICON_FILE)), "notifications show the installed icon");
         assert!(steps.windows(2).all(|w| w[0].0 <= w[1].0), "progress only moves forward");
         assert_eq!(steps.last().unwrap().0, 1.0);
     }
@@ -398,6 +416,7 @@ pub mod tests {
         assert_eq!(run_install(&e, true, b"app"), Err(Error::AppRunning));
         assert!(!e.paths.install_dir.exists());
         assert!(e.sys.entry.lock().unwrap().is_none());
+        assert!(e.sys.app_id_icon.lock().unwrap().is_none());
 
         *e.sys.running.lock().unwrap() = false;
         run_install(&e, true, b"app").unwrap();
@@ -453,6 +472,7 @@ pub mod tests {
         assert!(!e.paths.start_menu_dir.join(SHORTCUT).exists());
         assert!(!e.paths.desktop_dir.as_ref().unwrap().join(SHORTCUT).exists());
         assert!(e.sys.entry.lock().unwrap().is_none());
+        assert!(e.sys.app_id_icon.lock().unwrap().is_none(), "notification identity removed");
         assert!(e.paths.data_dir.join("devices.json").exists(), "data kept unless asked");
         let scheduled = e.sys.scheduled.lock().unwrap();
         assert_eq!(scheduled[0].0, vec![dir.join(UNINSTALLER)], "uninstaller removed after it exits");
@@ -485,6 +505,16 @@ pub mod tests {
         *e.sys.running.lock().unwrap() = true;
         assert_eq!(uninstall(&e.sys, &e.paths, true, &mut |_, _| {}), Err(Error::AppRunning));
         assert!(e.paths.install_dir.join(APP_EXE).exists());
+        assert!(e.sys.app_id_icon.lock().unwrap().is_some(), "notifications still work");
+    }
+
+    #[test]
+    fn update_keeps_the_notification_identity_on_the_new_folder() {
+        let mut e = env();
+        run_install(&e, true, b"version 1").unwrap();
+        e.paths.install_dir = e._tmp.path().join("Apps").join("Countdown");
+        run_install(&e, true, b"version 2").unwrap();
+        assert_eq!(*e.sys.app_id_icon.lock().unwrap(), Some(e.paths.install_dir.join(ICON_FILE)));
     }
 
     #[test]

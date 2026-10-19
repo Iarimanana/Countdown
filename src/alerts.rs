@@ -117,6 +117,24 @@ mod platform {
             }
         }
     }
+
+    /// True once the installer has registered Countdown's AppUserModelID.
+    /// Windows drops notifications sent under an ID it doesn't know, so
+    /// without it (the app run without installing) PowerShell's is used.
+    pub fn app_id_registered() -> bool {
+        use windows_sys::Win32::System::Registry::{HKEY, HKEY_CURRENT_USER, KEY_READ, RegCloseKey, RegOpenKeyExW};
+        let path: Vec<u16> = crate::app_id::REGISTRY_KEY.encode_utf16().chain(std::iter::once(0)).collect();
+        let mut key: HKEY = std::ptr::null_mut();
+        // SAFETY: `path` is NUL-terminated UTF-16 that outlives the call, and
+        // `key` is closed again only when opening it succeeded.
+        unsafe {
+            if RegOpenKeyExW(HKEY_CURRENT_USER, path.as_ptr(), 0, KEY_READ, &mut key) != 0 {
+                return false;
+            }
+            RegCloseKey(key);
+        }
+        true
+    }
 }
 
 #[cfg(not(windows))]
@@ -225,13 +243,19 @@ impl Alerter for SystemAlerter {
         // Showing a notification can block briefly (D-Bus on Linux), so it
         // runs on its own thread; a failure only means no pop-up.
         std::thread::spawn(move || {
-            let _ = notify_rust::Notification::new()
+            let mut notification = notify_rust::Notification::new();
+            notification
                 .appname("Countdown")
                 .summary(&summary)
                 .body(&body)
                 .urgency(notify_rust::Urgency::Critical)
-                .timeout(notify_rust::Timeout::Never)
-                .show();
+                .timeout(notify_rust::Timeout::Never);
+            // Windows ignores the app name and shows whichever app the ID names.
+            #[cfg(windows)]
+            if platform::app_id_registered() {
+                notification.app_id(crate::app_id::APP_USER_MODEL_ID);
+            }
+            let _ = notification.show();
         });
     }
 }

@@ -16,6 +16,8 @@ impl System for Shared {
     fn create_shortcut(&self, l: &std::path::Path, t: &std::path::Path, i: &std::path::Path) -> std::io::Result<()> { self.0.create_shortcut(l, t, i) }
     fn register(&self, e: &UninstallEntry) -> std::io::Result<()> { self.0.register(e) }
     fn unregister(&self) -> std::io::Result<()> { self.0.unregister() }
+    fn register_app_id(&self, i: &std::path::Path) -> std::io::Result<()> { self.0.register_app_id(i) }
+    fn unregister_app_id(&self) -> std::io::Result<()> { self.0.unregister_app_id() }
     fn installed(&self) -> Option<Installed> { self.0.installed() }
     fn launch(&self, e: &std::path::Path) -> std::io::Result<()> { self.0.launch(e) }
     fn schedule_removal(&self, f: &[std::path::PathBuf], d: &std::path::Path) -> std::io::Result<()> { self.0.schedule_removal(f, d) }

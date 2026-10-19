@@ -1,6 +1,7 @@
 //! The real `System`: Windows registry, shortcuts and processes. On other
 //! systems a stand-in keeps the installer runnable for development.
 
+use crate::app_id;
 use crate::instance;
 use crate::ops::{Installed, Paths, System, UninstallEntry};
 use std::io;
@@ -56,6 +57,7 @@ mod windows_impl {
     use winreg::enums::HKEY_CURRENT_USER;
 
     const UNINSTALL_KEY: &str = r"Software\Microsoft\Windows\CurrentVersion\Uninstall\Countdown";
+    const NOTIFICATION_SETTINGS_KEY: &str = r"Software\Microsoft\Windows\CurrentVersion\Notifications\Settings";
     const CREATE_NO_WINDOW: u32 = 0x0800_0000;
 
     pub struct WindowsSystem;
@@ -105,6 +107,26 @@ mod windows_impl {
                 Err(e) if e.kind() != io::ErrorKind::NotFound => Err(e),
                 _ => Ok(()),
             }
+        }
+
+        fn register_app_id(&self, icon: &Path) -> io::Result<()> {
+            let (key, _) = RegKey::predef(HKEY_CURRENT_USER).create_subkey(app_id::REGISTRY_KEY)?;
+            key.set_value("DisplayName", &"Countdown")?;
+            key.set_value("IconUri", &icon.display().to_string())?;
+            Ok(())
+        }
+
+        fn unregister_app_id(&self) -> io::Result<()> {
+            // Windows adds its own entry (on/off choice, last notification
+            // time) once a notification has been shown; it goes too.
+            let settings = format!("{NOTIFICATION_SETTINGS_KEY}\\{}", app_id::APP_USER_MODEL_ID);
+            for key in [app_id::REGISTRY_KEY, settings.as_str()] {
+                match RegKey::predef(HKEY_CURRENT_USER).delete_subkey_all(key) {
+                    Err(e) if e.kind() != io::ErrorKind::NotFound => return Err(e),
+                    _ => {}
+                }
+            }
+            Ok(())
         }
 
         fn installed(&self) -> Option<Installed> {
@@ -157,6 +179,10 @@ mod dev_impl {
         default_paths().install_dir.parent().unwrap().parent().unwrap().join("registry.json")
     }
 
+    fn app_id_file() -> PathBuf {
+        registry_file().with_file_name(format!("{}.txt", app_id::APP_USER_MODEL_ID))
+    }
+
     #[derive(serde::Serialize, serde::Deserialize)]
     struct Entry {
         version: String,
@@ -176,6 +202,15 @@ mod dev_impl {
         }
         fn unregister(&self) -> io::Result<()> {
             match std::fs::remove_file(registry_file()) {
+                Err(e) if e.kind() != io::ErrorKind::NotFound => Err(e),
+                _ => Ok(()),
+            }
+        }
+        fn register_app_id(&self, icon: &Path) -> io::Result<()> {
+            std::fs::write(app_id_file(), format!("Countdown\n{}\n", icon.display()))
+        }
+        fn unregister_app_id(&self) -> io::Result<()> {
+            match std::fs::remove_file(app_id_file()) {
                 Err(e) if e.kind() != io::ErrorKind::NotFound => Err(e),
                 _ => Ok(()),
             }

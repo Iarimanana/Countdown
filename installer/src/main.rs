@@ -9,7 +9,11 @@
 //!   countdown-setup --uninstall             uninstall, with a window
 //!   countdown-setup --uninstall --silent    uninstall, keeping the device list
 
-// Shared with the app, so both look the same and agree on the lock file.
+// Shared with the app, so both look the same and agree on the lock file
+// and the notification identity.
+#[path = "../../src/app_id.rs"]
+#[cfg_attr(not(windows), allow(dead_code))]
+mod app_id;
 #[path = "../../src/instance.rs"]
 #[allow(dead_code)]
 mod instance;
