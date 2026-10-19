@@ -1,0 +1,35 @@
+[workspace]
+members = [".", "installer"]
+
+[workspace.package]
+version = "1.0.0"
+
+[package]
+name = "countdown"
+description = "Keeps track of how long each device may stay on the Wi-Fi"
+version.workspace = true
+edition = "2024"
+
+[dependencies]
+chrono = { version = "0.4.45", default-features = false, features = ["clock"] }
+directories = "6.0.0"
+eframe = { version = "0.37.0", features = ["glow"] }
+egui = { version = "0.37.0", features = ["monochrome_emoji_fonts"] }
+notify-rust = "4.18.2"
+serde = { version = "1.0.229", features = ["derive"] }
+serde_json = "1.0.154"
+
+[target."cfg(windows)".dependencies]
+windows-sys = { version = "0.61.2", features = ["Win32_Media_Audio", "Win32_Foundation", "Win32_UI_WindowsAndMessaging"] }
+
+[build-dependencies]
+embed-resource = "3.0.12"
+
+[dev-dependencies]
+egui_kittest = { version = "0.37.0", features = ["eframe", "snapshot", "wgpu"] }
+egui_system_font_provider = "0.37.0"
+tempfile = "3.27.0"
+
+[profile.release]
+strip = true     # smaller .exe, no debug symbols
+lto = "thin"
