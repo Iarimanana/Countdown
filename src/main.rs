@@ -6,6 +6,7 @@ mod app;
 mod i18n;
 mod instance;
 mod model;
+mod renderer;
 mod theme;
 
 #[cfg(test)]
@@ -117,6 +118,7 @@ fn main() {
                 eframe::icon_data::from_png_bytes(include_bytes!("../assets/icon/countdown-256.png")).unwrap_or_default(),
             )),
         renderer: if use_glow { eframe::Renderer::Glow } else { eframe::Renderer::Wgpu },
+        wgpu_options: renderer::wgpu_options(),
         ..Default::default()
     };
     let config = Config {

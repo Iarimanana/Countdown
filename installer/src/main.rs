@@ -16,6 +16,8 @@ mod instance;
 #[path = "../../src/theme.rs"]
 #[allow(dead_code)]
 mod theme;
+#[path = "../../src/renderer.rs"]
+mod renderer;
 
 mod ops;
 mod system;
@@ -72,6 +74,7 @@ fn main() {
                 eframe::icon_data::from_png_bytes(include_bytes!("../../assets/icon/countdown-setup-256.png")).unwrap_or_default(),
             )),
         renderer: if use_glow { eframe::Renderer::Glow } else { eframe::Renderer::Wgpu },
+        wgpu_options: renderer::wgpu_options(),
         centered: true,
         persist_window: false,
         ..Default::default()

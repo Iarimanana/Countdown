@@ -82,6 +82,8 @@ Advanced: `Countdown-Setup.exe --silent` installs with default choices and no wi
   - `devices.json`: the device list.
   - `devices.json.bak`: the previous save. Countdown uses it automatically if `devices.json` is damaged.
   - `crash.log`: written if the app ever crashes. Send it along when reporting a problem.
+- On Windows, Countdown and its installer draw with Direct3D 12, not Vulkan: some Intel Vulkan drivers crash
+  the app a few seconds after it opens. To try another one, set `WGPU_BACKEND` (`vulkan`, `dx12` or `gl`).
 - If the window can't open (an old graphics driver, for example), Countdown retries once with OpenGL. If that
   also fails, it explains what happened in a message box.
 
