@@ -1,0 +1,67 @@
+# Tests and builds the Windows installer on every push and pull request.
+# Pushing a tag like v1.0.0 also publishes a GitHub release with the installer.
+#
+# Everything runs on GitHub-hosted runners, which SignPath requires for
+# signing open source releases. The signing step goes between the build and
+# the release once the project has a SignPath subscription.
+name: Windows
+
+on:
+  push:
+    branches: [main]
+    tags: ["v*"]
+  pull_request:
+
+permissions:
+  contents: read
+
+jobs:
+  build:
+    runs-on: windows-latest
+    steps:
+      - uses: actions/checkout@v7
+
+      - name: Update Rust
+        run: rustup update stable --no-self-update && rustup default stable
+
+      - uses: Swatinem/rust-cache@v2
+
+      - name: Test
+        run: cargo test --workspace
+
+      - name: Build the installer
+        shell: pwsh
+        run: .\build-windows.ps1
+
+      - name: Upload the installer
+        uses: actions/upload-artifact@v7
+        with:
+          name: Countdown-Setup
+          path: dist/*.exe
+          if-no-files-found: error
+
+  release:
+    if: startsWith(github.ref, 'refs/tags/v')
+    needs: build
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write
+    steps:
+      - uses: actions/download-artifact@v8
+        with:
+          name: Countdown-Setup
+          path: dist
+
+      - name: Publish the release
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          cat > notes.md <<'EOF'
+          Download `Countdown-Setup-*.exe` below and run it. It works offline and needs no administrator rights.
+
+          This installer isn't code-signed yet, so Windows may show "Windows protected your PC" the first time.
+          Click **More info → Run anyway**. See the [code signing policy](https://github.com/${{ github.repository }}#code-signing-policy).
+          EOF
+          gh release create "$GITHUB_REF_NAME" dist/*.exe \
+            --repo "$GITHUB_REPOSITORY" --title "Countdown $GITHUB_REF_NAME" \
+            --notes-file notes.md --generate-notes --verify-tag
