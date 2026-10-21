@@ -311,13 +311,13 @@ fn alarm_rings_when_time_is_up_and_can_be_stopped() {
     ui.advance(1799);
     assert!(ui.alerts.calls().is_empty(), "not yet");
     ui.advance(1);
-    assert_eq!(ui.alerts.calls(), ["alarm"]);
+    assert_eq!(ui.alerts.sounds(), ["alarm"]);
     assert!(matches!(ui.status(0), Status::Expired { .. }));
     assert!(ui.sees("n'a plus de temps"));
     assert!(ui.sees("Temps écoulé"));
 
     ui.click("Arrêter l'alarme");
-    assert_eq!(ui.alerts.calls(), ["alarm", "stop"]);
+    assert_eq!(ui.alerts.sounds(), ["alarm", "stop"]);
     assert!(ui.app().alarm_until.is_none());
     assert!(matches!(ui.status(0), Status::Expired { .. }), "stopping the alarm doesn't remove the device");
 }
@@ -329,9 +329,9 @@ fn alarm_stops_by_itself_after_a_minute() {
     ui.alerts.clear();
     ui.advance(1800);
     ui.advance(ALARM_SECS - 1);
-    assert_eq!(ui.alerts.calls(), ["alarm"]);
+    assert_eq!(ui.alerts.sounds(), ["alarm"]);
     ui.advance(1);
-    assert_eq!(ui.alerts.calls(), ["alarm", "stop"]);
+    assert_eq!(ui.alerts.sounds(), ["alarm", "stop"]);
 }
 
 #[test]
@@ -341,7 +341,7 @@ fn confirming_removal_stops_the_alarm_and_archives_the_device() {
     ui.advance(1800);
     ui.alerts.clear();
     ui.click("Retiré du réseau");
-    assert_eq!(ui.alerts.calls(), ["stop"]);
+    assert_eq!(ui.alerts.sounds(), ["stop"]);
     assert!(matches!(ui.status(0), Status::Archived { .. }));
     assert!(ui.sees("Retiré à l'instant"));
     assert!(ui.sees("Aucun appareil connecté"));
@@ -357,7 +357,7 @@ fn reminder_rings_again_if_the_device_is_not_removed() {
     ui.advance(ALARM_SECS);
     assert!(ui.sees("Prochain rappel dans 4\u{a0}min"));
     ui.advance(300 - ALARM_SECS);
-    assert_eq!(ui.alerts.calls(), ["alarm", "stop", "alarm"], "reminded after 5 minutes");
+    assert_eq!(ui.alerts.sounds(), ["alarm", "stop", "alarm"], "reminded after 5 minutes");
     ui.click("Retiré du réseau");
     ui.alerts.clear();
     ui.advance(3600);
@@ -374,9 +374,39 @@ fn notification_mode_sends_a_notification_with_sound() {
     let calls = ui.alerts.calls();
     assert_eq!(calls.len(), 2);
     assert!(calls[0].starts_with("notify: Temps écoulé"), "{calls:?}");
-    assert!(calls[0].contains("Paul (iPhone 13 Pro Max, 00:11:22:33:44:55)"), "{calls:?}");
     assert_eq!(calls[1], "chime");
     assert!(ui.app().alarm_until.is_none(), "no alarm in notification mode");
+}
+
+#[test]
+fn notification_gives_the_device_details() {
+    let mut ui = setup();
+    ui.add("Paul", "00:11:22:33:44:55", "30\u{a0}min");
+    ui.alerts.clear();
+    ui.advance(1800);
+    let notes = ui.alerts.notifications();
+    assert_eq!(notes.len(), 1, "{notes:?}");
+    let (title, body) = notes[0].split_once(" | ").unwrap();
+    assert_eq!(title, "Temps écoulé\u{a0}: retirez cet appareil de votre Wi-Fi");
+    let lines: Vec<_> = body.lines().collect();
+    assert_eq!(lines[0], "Paul — iPhone 13 Pro Max");
+    assert_eq!(lines[1], "MAC 00:11:22:33:44:55");
+    assert!(lines[2].starts_with("Temps écoulé aujourd'hui à "), "{lines:?}");
+}
+
+#[test]
+fn alarm_mode_also_sends_a_notification() {
+    let mut ui = setup();
+    assert_eq!(ui.app().store.alert_mode, AlertMode::Alarm);
+    ui.add("Paul", "00:11:22:33:44:55", "30\u{a0}min");
+    ui.alerts.clear();
+    ui.advance(1800);
+    assert_eq!(ui.alerts.sounds(), ["alarm"]);
+    assert_eq!(ui.alerts.notifications().len(), 1);
+    assert!(ui.alerts.notifications()[0].contains("MAC 00:11:22:33:44:55"));
+
+    ui.advance(300);
+    assert!(ui.alerts.notifications()[1].starts_with("Rappel"), "reminders notify too: {:?}", ui.alerts.calls());
 }
 
 #[test]
@@ -391,14 +421,28 @@ fn reminder_notification_says_it_is_a_reminder() {
 }
 
 #[test]
+fn notification_is_in_the_chosen_language() {
+    let mut ui = setup();
+    ui.add("Paul", "00:11:22:33:44:55", "30\u{a0}min");
+    ui.click("MG");
+    ui.alerts.clear();
+    ui.advance(1800);
+    let note = &ui.alerts.notifications()[0];
+    assert!(note.starts_with("Lany ny fotoana\u{a0}: esory"), "{note}");
+    assert!(note.contains("\nMAC 00:11:22:33:44:55\nLany ny fotoana anio amin'ny "), "{note}");
+}
+
+#[test]
 fn several_devices_expiring_together_ring_once() {
     let mut ui = setup();
     ui.add("A", "00:00:00:00:00:01", "30\u{a0}min");
     ui.add("B", "00:00:00:00:00:02", "30\u{a0}min");
     ui.alerts.clear();
     ui.advance(1800);
-    assert_eq!(ui.alerts.calls(), ["alarm"]);
+    assert_eq!(ui.alerts.sounds(), ["alarm"]);
     assert!(ui.sees("2\u{a0}appareils n'ont plus de temps"));
+    let note = &ui.alerts.notifications()[0];
+    assert!(note.ends_with("| A — iPhone 13 Pro Max\nB — iPhone 13 Pro Max"), "one line per device: {note}");
 }
 
 #[test]
@@ -417,7 +461,7 @@ fn adding_time_to_an_expired_device_stops_the_alarm() {
     ui.advance(1800);
     ui.alerts.clear();
     ui.click("+1\u{a0}h");
-    assert_eq!(ui.alerts.calls(), ["stop"]);
+    assert_eq!(ui.alerts.sounds(), ["stop"]);
     assert_eq!(ui.status(0), Status::Active { ends_at: ui.now() + 3600, total: 3600 });
 }
 
@@ -432,7 +476,7 @@ fn device_that_expired_while_closed_rings_at_startup() {
         RecordingAlerter::default(),
         egui::vec2(1000.0, 1400.0),
     );
-    assert_eq!(ui.alerts.calls(), ["alarm"]);
+    assert_eq!(ui.alerts.sounds(), ["alarm"]);
     assert!(ui.sees("depuis 10\u{a0}min"));
 }
 
@@ -494,7 +538,7 @@ fn known_expired_device_offers_to_give_time() {
     assert!(ui.sees("Temps déjà écoulé"));
     ui.alerts.clear();
     ui.click("Redonner 1\u{a0}h");
-    assert_eq!(ui.alerts.calls(), ["stop"], "alarm stops once nobody is out of time");
+    assert_eq!(ui.alerts.sounds(), ["stop"], "alarm stops once nobody is out of time");
     assert!(matches!(ui.status(0), Status::Active { .. }));
 }
 
@@ -612,9 +656,9 @@ fn testing_the_alarm_rings_briefly() {
     let mut ui = setup();
     ui.click("Réglages");
     ui.click("Tester l'alerte");
-    assert_eq!(ui.alerts.calls(), ["alarm"]);
+    assert_eq!(ui.alerts.sounds(), ["alarm"]);
     ui.advance(5);
-    assert_eq!(ui.alerts.calls(), ["alarm", "stop"]);
+    assert_eq!(ui.alerts.sounds(), ["alarm", "stop"]);
 }
 
 #[test]
@@ -622,8 +666,31 @@ fn header_language_switch() {
     let mut ui = setup();
     ui.click("EN");
     assert!(ui.sees("No devices connected"));
+    ui.click("MG");
+    assert!(ui.sees("Tsy misy fitaovana mifandray"));
+    assert!(ui.sees("Ampidiro ny fitaovana"));
+    assert_eq!(ui.saved().lang, Lang::Mg, "the choice is saved");
     ui.click("FR");
     assert!(ui.sees("Aucun appareil connecté"));
+}
+
+#[test]
+fn malagasy_from_the_settings() {
+    let mut ui = setup();
+    ui.click("Réglages");
+    ui.click("Malagasy");
+    assert_eq!(ui.app().store.lang, Lang::Mg);
+    assert!(ui.sees("Rehefa lany ny fotoana"), "dialog switches language at once");
+    ui.click("Hidio");
+    assert!(ui.app().dialog.is_none());
+}
+
+#[test]
+fn testing_the_alarm_also_shows_a_notification() {
+    let mut ui = setup();
+    ui.click("Réglages");
+    ui.click("Tester l'alerte");
+    assert_eq!(ui.alerts.notifications(), ["Countdown | Ceci est un test. Les alertes fonctionnent."]);
 }
 
 #[test]
@@ -678,7 +745,7 @@ fn save_failure_is_shown_and_the_app_keeps_working() {
     assert_eq!(ui.app().store.devices.len(), 1, "the device is still tracked in memory");
     ui.advance(1800);
     assert!(matches!(ui.status(0), Status::Expired { .. }), "timers keep working");
-    assert_eq!(ui.alerts.calls(), ["alarm"]);
+    assert_eq!(ui.alerts.sounds(), ["alarm"]);
 }
 
 // ---- Stress ----
@@ -703,7 +770,10 @@ fn hundreds_of_devices_and_odd_names_render_fine() {
     ui.advance(150 * 60);
     let expired = ui.app().store.devices.iter().filter(|d| matches!(d.status, Status::Expired { .. })).count();
     assert_eq!(expired, 150);
-    assert_eq!(ui.alerts.calls(), ["alarm"], "one alarm for the whole batch");
+    assert_eq!(ui.alerts.sounds(), ["alarm"], "one alarm for the whole batch");
+    let note = &ui.alerts.notifications()[0];
+    assert_eq!(note.lines().count(), 4, "three devices, then a count: {note}");
+    assert!(note.ends_with("et 147\u{a0}autres appareils"), "{note}");
 }
 
 #[test]
@@ -814,4 +884,22 @@ fn screenshots() {
         ui.click("Réglages");
         shoot(&mut ui, &format!("settings-{suffix}"));
     }
+
+    // Malagasy runs longest, so it's the one most likely to overflow.
+    let mut ui = setup_with(|_| {}, RecordingAlerter::default(), egui::vec2(960.0, 1180.0));
+    ui.add("Findain'i Paul", "3C:22:FB:1A:09:E4", "2\u{a0}h");
+    ui.add("Solosain'i Marie", "A4:83:E7:5D:C2:10", "30\u{a0}min");
+    ui.add("Console de Léo", "98:B6:E9:21:3F:CD", "1\u{a0}jour");
+    ui.click_last("Terminer");
+    ui.click("Retiré du réseau");
+    ui.advance(1800);
+    ui.click("MG");
+    shoot(&mut ui, "main-mg");
+    ui.harness.state_mut().mac = "98-b6-e9-21-3f-cd".into();
+    ui.steps();
+    ui.click("Ampidiro ny fitaovana");
+    shoot(&mut ui, "popup-mg");
+    ui.click("Aoka ihany");
+    ui.click("Fikirana");
+    shoot(&mut ui, "settings-mg");
 }

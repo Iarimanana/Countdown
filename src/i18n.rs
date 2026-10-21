@@ -1,4 +1,4 @@
-//! All user-facing text, in French (default) and English.
+//! All user-facing text, in French (default), English and Malagasy.
 //!
 //! Fixed labels live in a `Strings` table per language; anything with a number
 //! or a name in it is a method on `Lang`, because plurals and word order differ.
@@ -17,6 +17,7 @@ pub enum Lang {
     #[default]
     Fr,
     En,
+    Mg,
 }
 
 pub struct Strings {
@@ -126,7 +127,8 @@ static FR: Strings = Strings {
     language: "Langue",
     when_time_up: "Quand le temps est écoulé",
     alert_alarm: "Faire sonner une alarme",
-    alert_alarm_desc: "Sonne pendant 1\u{a0}minute et affiche la fenêtre, même si elle est réduite.",
+    alert_alarm_desc: "Sonne pendant 1\u{a0}minute, affiche la fenêtre même si elle est réduite, \
+        et envoie aussi une notification.",
     alert_notification: "Envoyer une notification avec un son",
     alert_notification_desc: "Une notification apparaît dans le coin de l'écran, avec un son court.",
     reminder: "Rappel si l'appareil n'est pas retiré",
@@ -193,7 +195,7 @@ static EN: Strings = Strings {
     language: "Language",
     when_time_up: "When time is up",
     alert_alarm: "Ring an alarm",
-    alert_alarm_desc: "Rings for 1 minute and brings the window forward, even when minimized.",
+    alert_alarm_desc: "Rings for 1 minute, brings the window forward even when minimized, and also sends a notification.",
     alert_notification: "Send a notification with a sound",
     alert_notification_desc: "A notification appears in the corner of the screen, with a short sound.",
     reminder: "Reminder if the device isn't removed",
@@ -214,22 +216,116 @@ static EN: Strings = Strings {
     recovered: "The device file was damaged. The last saved copy was restored: please check the list.",
 };
 
+static MG: Strings = Strings {
+    new_device: "Fitaovana vaovao",
+    name: "Anarana",
+    name_hint: "oh. Findain'i Paul",
+    box_name: "Anarana ao amin'ny box",
+    box_name_hint: "oh. iPhone 13 Pro Max",
+    box_name_help: "Ny anaran'ilay fitaovana araka ny hisehoany ao amin'ny pejy fitantanana ny box, \
+        ao amin'ny lisitry ny fitaovana mifandray.\n\
+        Manampy anao hahita ilay fitaovana marina izany rehefa hesorinao amin'ny tambajotra izy.",
+    mac: "Adiresy MAC",
+    mac_help: "Ny adiresy MAC no mamantatra ilay fitaovana amin'ny Wi-Fi.\n\
+        Amin'ny finday: Réglages > Wi-Fi > tsindrio ny anaran'ny tambajotra. Ampiasao ny adiresy aseho ho \
+        an'ITY tambajotra ITY («\u{a0}adresse Wi-Fi privée\u{a0}» amin'ny iPhone, «\u{a0}adresse MAC aléatoire\u{a0}» \
+        amin'ny Android).\n\
+        Hitanao ao amin'ny lisitry ny fitaovana mifandray ao amin'ny box koa izany.",
+    mac_ok: "Adiresy mety",
+    mac_incomplete: "Tarehin-tsoratra 12\u{a0}: isa 0 ka hatramin'ny 9 sy litera A ka hatramin'ny F",
+    duration: "Faharetan'ny fifandraisana",
+    days: "Andro",
+    hours: "Ora",
+    minutes: "Minitra",
+    choose_duration: "Safidio ny faharetany",
+    add: "Ampidiro ny fitaovana",
+    connected: "Mifandray",
+    connected_empty: "Tsy misy fitaovana mifandray. Fenoy ny eo ambony hampidirana iray.",
+    time_up: "Lany ny fotoana",
+    end_now: "Atsaharo",
+    end_now_tip: "Atsaharo izao ity fifandraisana ity",
+    removed: "Nesorina tamin'ny tambajotra",
+    removed_tip: "Tsindrio rehefa avy nesorinao tao amin'ny box ilay fitaovana",
+    stop_alarm: "Atsaharo ny lakolosy",
+    past: "Fitaovana taloha",
+    past_empty: "Voatahiry eto ny fitaovana nesorina tamin'ny tambajotra, mba hampifandraisina indray any aoriana.",
+    search: "Hitady",
+    search_hint: "Anarana na adiresy MAC",
+    no_match: "Tsy misy fitaovana mifanaraka amin'ny fikarohana.",
+    reconnect: "Ampifandraiso indray…",
+    forget: "Hadinoy",
+    forget_confirm: "Hadinoina tanteraka ve\u{a0}?",
+    yes: "Eny",
+    no: "Tsia",
+    cancel: "Aoka ihany",
+    close: "Hidio",
+    settings: "Fikirana",
+    language: "Fiteny",
+    when_time_up: "Rehefa lany ny fotoana",
+    alert_alarm: "Hampaneno lakolosy",
+    alert_alarm_desc: "Maneno mandritra ny 1\u{a0}minitra, mampiseho ny varavarankely na dia nakelezina aza, \
+        ary mandefa fampandrenesana koa.",
+    alert_notification: "Handefa fampandrenesana miaraka amin'ny feo",
+    alert_notification_desc: "Misy fampandrenesana miseho eo amin'ny zoron'ny efijery, miaraka amin'ny feo fohy.",
+    reminder: "Fampahatsiahivana raha tsy nesorina ilay fitaovana",
+    reminder_desc: "Miverina ny fampitandremana raha tsy mbola nanindry «\u{a0}Nesorina tamin'ny tambajotra\u{a0}» ianao.",
+    never: "Tsy misy",
+    test_sound: "Andramo ny fampitandremana",
+    test_notification: "Fanandramana ity. Mandeha tsara ny fampitandremana.",
+    sound_failed: "Tsy naneno ny feo. Jereo raha mandeha ny feo ary misy fanamafisam-peo mifandray.",
+    known_past_title: "Fitaovana efa fantatra",
+    known_connected_title: "Fitaovana efa mifandray",
+    known_expired_title: "Efa lany ny fotoana",
+    close_title: "Hidiana ve Countdown\u{a0}?",
+    close_body: "Misy fitaovana mifandray. Raha mihidy Countdown dia tsy hisy lakolosy haneno. \
+        Mitohy ny fotoana: hojerena izany rehefa sokafana indray i Countdown.",
+    keep_open: "Avelao hisokatra",
+    close_anyway: "Hidio ihany",
+    already_running: "Efa misokatra Countdown. Tadiavo eo amin'ny barre des tâches ny varavarankeliny.",
+    recovered: "Simba ny rakitra misy ny fitaovana. Naverina ny tahiry farany\u{a0}: hamarino ny lisitra.",
+};
+
 const MONTHS_FR: [&str; 12] =
     ["janv.", "févr.", "mars", "avr.", "mai", "juin", "juil.", "août", "sept.", "oct.", "nov.", "déc."];
 const MONTHS_EN: [&str; 12] = ["Jan", "Feb", "Mar", "Apr", "May", "Jun", "Jul", "Aug", "Sep", "Oct", "Nov", "Dec"];
+const MONTHS_MG: [&str; 12] =
+    ["Jan.", "Feb.", "Mar.", "Apr.", "Mey", "Jona", "Jol.", "Aog.", "Sep.", "Okt.", "Nov.", "Des."];
 
 impl Lang {
+    /// Every language, in the order the language buttons show them.
+    pub const ALL: [Lang; 3] = [Lang::Fr, Lang::En, Lang::Mg];
+
     pub fn s(self) -> &'static Strings {
         match self {
             Lang::Fr => &FR,
             Lang::En => &EN,
+            Lang::Mg => &MG,
         }
     }
 
-    fn day_letter(self) -> char {
+    /// The short button label in the header: "FR", "EN", "MG".
+    pub fn code(self) -> &'static str {
         match self {
-            Lang::Fr => 'j',
-            Lang::En => 'd',
+            Lang::Fr => "FR",
+            Lang::En => "EN",
+            Lang::Mg => "MG",
+        }
+    }
+
+    /// The language's own name, for the settings.
+    pub fn native_name(self) -> &'static str {
+        match self {
+            Lang::Fr => "Français",
+            Lang::En => "English",
+            Lang::Mg => "Malagasy",
+        }
+    }
+
+    fn day_letter(self) -> &'static str {
+        match self {
+            Lang::Fr => "j",
+            Lang::En => "d",
+            Lang::Mg => "andro",
         }
     }
 
@@ -238,8 +334,10 @@ impl Lang {
         match (self, minutes) {
             (Lang::Fr, 1440) => format!("1{NB}jour"),
             (Lang::En, 1440) => format!("1{NB}day"),
+            (Lang::Mg, 1440) => format!("1{NB}andro"),
             (Lang::Fr, 10080) => format!("1{NB}semaine"),
             (Lang::En, 10080) => format!("1{NB}week"),
+            (Lang::Mg, 10080) => format!("1{NB}herinandro"),
             _ => self.short_duration(minutes as u64 * 60),
         }
     }
@@ -253,11 +351,14 @@ impl Lang {
             (Lang::En, 0) => "No devices connected".to_string(),
             (Lang::En, 1) => format!("1{NB}device connected"),
             (Lang::En, n) => format!("{n}{NB}devices connected"),
+            (Lang::Mg, 0) => "Tsy misy fitaovana mifandray".to_string(),
+            (Lang::Mg, n) => format!("{n}{NB}fitaovana mifandray"),
         };
         match (self, expired) {
             (_, 0) => main,
             (Lang::Fr, n) => format!("{main}, {n}{NB}à retirer"),
             (Lang::En, n) => format!("{main}, {n}{NB}to remove"),
+            (Lang::Mg, n) => format!("{main}, {n}{NB}tokony hesorina"),
         }
     }
 
@@ -275,6 +376,12 @@ impl Lang {
             (Lang::En, n) => format!(
                 "{n} devices are out of time. Remove them from your Wi-Fi, then click \u{201c}Removed from network\u{201d}."
             ),
+            (Lang::Mg, 1) => format!(
+                "Lany ny fotoan'ny fitaovana iray. Esory amin'ny Wi-Fi-nao izy, dia tsindrio ny «{NB}Nesorina tamin'ny tambajotra{NB}»."
+            ),
+            (Lang::Mg, n) => format!(
+                "Lany ny fotoan'ny fitaovana {n}. Esory amin'ny Wi-Fi-nao izy ireo, dia tsindrio ny «{NB}Nesorina tamin'ny tambajotra{NB}»."
+            ),
         }
     }
 
@@ -283,6 +390,7 @@ impl Lang {
         match self {
             Lang::Fr => format!("Prochain rappel dans {mins}{NB}min"),
             Lang::En => format!("Next reminder in {mins}{NB}min"),
+            Lang::Mg => format!("Fampahatsiahivana manaraka afaka {mins}{NB}min"),
         }
     }
 
@@ -293,6 +401,8 @@ impl Lang {
             (Lang::Fr, n) => format!("Temps écoulé{NB}: retirez {n}{NB}appareils de votre Wi-Fi"),
             (Lang::En, 1) => "Time's up: remove this device from your Wi-Fi".to_string(),
             (Lang::En, n) => format!("Time's up: remove {n} devices from your Wi-Fi"),
+            (Lang::Mg, 1) => format!("Lany ny fotoana{NB}: esory amin'ny Wi-Fi-nao ity fitaovana ity"),
+            (Lang::Mg, n) => format!("Lany ny fotoana{NB}: esory amin'ny Wi-Fi-nao ireo fitaovana {n} ireo"),
         }
     }
 
@@ -303,6 +413,28 @@ impl Lang {
             (Lang::Fr, n) => format!("Rappel{NB}: {n}{NB}appareils n'ont toujours pas été retirés"),
             (Lang::En, 1) => "Reminder: this device still hasn't been removed".to_string(),
             (Lang::En, n) => format!("Reminder: {n} devices still haven't been removed"),
+            (Lang::Mg, 1) => format!("Fampahatsiahivana{NB}: mbola tsy nesorina ity fitaovana ity"),
+            (Lang::Mg, n) => format!("Fampahatsiahivana{NB}: mbola tsy nesorina ireo fitaovana {n} ireo"),
+        }
+    }
+
+    /// In a notification, under a device: "Temps écoulé aujourd'hui à 14:05".
+    pub fn ran_out(self, moment: &str) -> String {
+        match self {
+            Lang::Fr => format!("Temps écoulé {moment}"),
+            Lang::En => format!("Time ran out {moment}"),
+            Lang::Mg => format!("Lany ny fotoana {moment}"),
+        }
+    }
+
+    /// Last line of a notification that lists only some of the devices.
+    pub fn more_devices(self, n: usize) -> String {
+        match (self, n) {
+            (Lang::Fr, 1) => format!("et 1{NB}autre appareil"),
+            (Lang::Fr, n) => format!("et {n}{NB}autres appareils"),
+            (Lang::En, 1) => "and 1 more device".to_string(),
+            (Lang::En, n) => format!("and {n} more devices"),
+            (Lang::Mg, n) => format!("sy fitaovana {n} hafa"),
         }
     }
 
@@ -314,9 +446,10 @@ impl Lang {
     }
 
     pub fn sessions(self, n: u32) -> String {
-        match n {
-            1 => format!("1{NB}session"),
-            n => format!("{n}{NB}sessions"),
+        match (self, n) {
+            (Lang::Mg, n) => format!("{n}{NB}fifandraisana"),
+            (_, 1) => format!("1{NB}session"),
+            (_, n) => format!("{n}{NB}sessions"),
         }
     }
 
@@ -333,6 +466,7 @@ impl Lang {
                     (Lang::Fr, d) => format!("{d}{NB}jours"),
                     (Lang::En, 1) => format!("1{NB}day"),
                     (Lang::En, d) => format!("{d}{NB}days"),
+                    (Lang::Mg, d) => format!("{d}{NB}andro"),
                 })
             }
         }
@@ -345,6 +479,8 @@ impl Lang {
             (Lang::Fr, Some(a)) => format!("Retiré il y a {a}"),
             (Lang::En, None) => "Removed just now".to_string(),
             (Lang::En, Some(a)) => format!("Removed {a} ago"),
+            (Lang::Mg, None) => "Vao nesorina".to_string(),
+            (Lang::Mg, Some(a)) => format!("Nesorina {a} lasa izay"),
         }
     }
 
@@ -355,6 +491,8 @@ impl Lang {
             (Lang::Fr, Some(a)) => format!("depuis {a}"),
             (Lang::En, None) => "just now".to_string(),
             (Lang::En, Some(a)) => format!("for {a}"),
+            (Lang::Mg, None) => "vao izao".to_string(),
+            (Lang::Mg, Some(a)) => format!("efa {a}"),
         }
     }
 
@@ -376,7 +514,7 @@ impl Lang {
             (0, 0, m) => format!("{m}{NB}min"),
             (0, h, 0) => format!("{h}{NB}h"),
             (0, h, m) => match self {
-                Lang::Fr => format!("{h}{NB}h{NB}{m:02}"),
+                Lang::Fr | Lang::Mg => format!("{h}{NB}h{NB}{m:02}"),
                 Lang::En => format!("{h}{NB}h {m}{NB}min"),
             },
             (d, 0, 0) => format!("{d}{NB}{day}"),
@@ -399,6 +537,9 @@ impl Lang {
             (Lang::En, 0) => format!("today at {time}"),
             (Lang::En, 1) => format!("tomorrow at {time}"),
             (Lang::En, _) => format!("{} {day}{year_suffix} at {time}", MONTHS_EN[month]),
+            (Lang::Mg, 0) => format!("anio amin'ny {time}"),
+            (Lang::Mg, 1) => format!("rahampitso amin'ny {time}"),
+            (Lang::Mg, _) => format!("ny {day}{NB}{}{year_suffix} amin'ny {time}", MONTHS_MG[month]),
         }
     }
 
@@ -406,6 +547,7 @@ impl Lang {
         match self {
             Lang::Fr => format!("Fin prévue{NB}: {moment}"),
             Lang::En => format!("Ends {moment}"),
+            Lang::Mg => format!("Hifarana {moment}"),
         }
     }
 
@@ -417,9 +559,12 @@ impl Lang {
             (Lang::Fr, 1) => format!("jusqu'à demain {time}"),
             (Lang::En, 0) => format!("until {time}"),
             (Lang::En, 1) => format!("until tomorrow {time}"),
+            (Lang::Mg, 0) => format!("hatramin'ny {time}"),
+            (Lang::Mg, 1) => format!("hatramin'ny rahampitso {time}"),
             _ => match self {
                 Lang::Fr => format!("jusqu'au {}", self.moment(at, now).trim_start_matches("le ")),
                 Lang::En => format!("until {}", self.moment(at, now)),
+                Lang::Mg => format!("hatramin'ny {}", self.moment(at, now).trim_start_matches("ny ")),
             },
         }
     }
@@ -434,6 +579,9 @@ impl Lang {
             Lang::En => {
                 format!("This MAC address is saved as \u{201c}{name}\u{201d} ({s}). Do you want to reconnect this device?")
             }
+            Lang::Mg => format!(
+                "Voatahiry amin'ny anarana «{NB}{name}{NB}» ity adiresy MAC ity ({s}). Te hampifandray indray ity fitaovana ity ve ianao\u{a0}?"
+            ),
         }
     }
 
@@ -445,6 +593,9 @@ impl Lang {
             ),
             Lang::En => format!(
                 "\u{201c}{name}\u{201d} is already connected, with {left} left ({until}). Do you want to add time?"
+            ),
+            Lang::Mg => format!(
+                "Efa mifandray «{NB}{name}{NB}». Mbola manana {left} izy ({until}). Te hanampy fotoana ve ianao\u{a0}?"
             ),
         }
     }
@@ -458,6 +609,9 @@ impl Lang {
             Lang::En => format!(
                 "\u{201c}{name}\u{201d} is out of time and waiting to be removed. Do you want to give it more time?"
             ),
+            Lang::Mg => format!(
+                "Lany ny fotoan'i «{NB}{name}{NB}» ary miandry ho esorina amin'ny tambajotra izy. Te hanome fotoana fanampiny ve ianao\u{a0}?"
+            ),
         }
     }
 
@@ -465,6 +619,7 @@ impl Lang {
         match self {
             Lang::Fr => format!("Reconnecter pour {}", self.short_duration(secs)),
             Lang::En => format!("Reconnect for {}", self.short_duration(secs)),
+            Lang::Mg => format!("Ampifandraiso indray mandritra ny {}", self.short_duration(secs)),
         }
     }
 
@@ -472,6 +627,7 @@ impl Lang {
         match self {
             Lang::Fr => format!("Ajouter {}", self.short_duration(secs)),
             Lang::En => format!("Add {}", self.short_duration(secs)),
+            Lang::Mg => format!("Ampio {}", self.short_duration(secs)),
         }
     }
 
@@ -479,6 +635,7 @@ impl Lang {
         match self {
             Lang::Fr => format!("Redonner {}", self.short_duration(secs)),
             Lang::En => format!("Give {}", self.short_duration(secs)),
+            Lang::Mg => format!("Omeo {}", self.short_duration(secs)),
         }
     }
 
@@ -500,6 +657,14 @@ impl Lang {
             (Lang::En, AddError::InvalidMac) => {
                 "The MAC address must be 12 characters (0 to 9, A to F), e.g. 3C:22:FB:1A:09:E4.".into()
             }
+            (Lang::Mg, AddError::EmptyName) => "Soraty ny anaran'ilay fitaovana.".into(),
+            (Lang::Mg, AddError::EmptyBoxName) => {
+                "Soraty ny anaran'ilay fitaovana araka ny hisehoany ao amin'ny box (oh. iPhone 13 Pro Max).".into()
+            }
+            (Lang::Mg, AddError::ZeroDuration) => format!("Misafidiana faharetana 1{NB}minitra farafahakeliny."),
+            (Lang::Mg, AddError::InvalidMac) => format!(
+                "Tsy maintsy misy tarehin-tsoratra 12 ny adiresy MAC (0 ka hatramin'ny 9, A ka hatramin'ny F), oh. 3C:22:FB:1A:09:E4."
+            ),
             // Handled by the known-device popup, never shown as an error.
             (_, AddError::Known(_)) => String::new(),
         }
@@ -509,6 +674,7 @@ impl Lang {
         match self {
             Lang::Fr => format!("Déjà enregistrée{NB}: {name}"),
             Lang::En => format!("Already saved: {name}"),
+            Lang::Mg => format!("Efa voatahiry{NB}: {name}"),
         }
     }
 
@@ -516,6 +682,7 @@ impl Lang {
         match self {
             Lang::Fr => format!("Données enregistrées dans {}", path.display()),
             Lang::En => format!("Data saved in {}", path.display()),
+            Lang::Mg => format!("Voatahiry ao amin'ny {} ny angona", path.display()),
         }
     }
 
@@ -526,6 +693,10 @@ impl Lang {
                 path.display()
             ),
             Lang::En => format!("Could not save the list ({err}). Will retry on the next change. File: {}", path.display()),
+            Lang::Mg => format!(
+                "Tsy voatahiry ny lisitra ({err}). Hiezaka indray amin'ny fanovana manaraka. Rakitra\u{a0}: {}",
+                path.display()
+            ),
         }
     }
 
@@ -536,6 +707,9 @@ impl Lang {
                 "Le fichier des appareils était illisible ({err}). La liste repart de zéro. L'ancien fichier est conservé\u{a0}: {kept}"
             ),
             Lang::En => format!("The device file could not be read ({err}). Starting with an empty list. Old file kept at: {kept}"),
+            Lang::Mg => format!(
+                "Tsy voavaky ny rakitra misy ny fitaovana ({err}). Manomboka amin'ny lisitra foana. Voatahiry ny rakitra taloha\u{a0}: {kept}"
+            ),
         }
     }
 }
@@ -550,8 +724,8 @@ mod tests {
     }
 
     #[test]
-    fn every_label_is_filled_in_both_languages() {
-        for lang in [Lang::Fr, Lang::En] {
+    fn every_label_is_filled_in_every_language() {
+        for lang in Lang::ALL {
             let s = lang.s();
             let all = [
                 s.new_device, s.name, s.name_hint, s.box_name, s.box_name_hint, s.box_name_help, s.mac, s.mac_help, s.mac_ok, s.mac_incomplete, s.duration,
@@ -574,6 +748,36 @@ mod tests {
     fn languages_round_trip_through_json() {
         assert_eq!(serde_json::to_string(&Lang::Fr).unwrap(), "\"fr\"");
         assert_eq!(serde_json::from_str::<Lang>("\"en\"").unwrap(), Lang::En);
+        assert_eq!(serde_json::to_string(&Lang::Mg).unwrap(), "\"mg\"");
+    }
+
+    #[test]
+    fn malagasy_texts() {
+        let now = at(2026, 10, 17, 20, 0);
+        assert_eq!(Lang::Mg.summary(3, 1), "3\u{a0}fitaovana mifandray, 1\u{a0}tokony hesorina");
+        assert_eq!(Lang::Mg.preset(10080), "1\u{a0}herinandro");
+        assert_eq!(Lang::Mg.countdown(90_061), "1\u{a0}andro 01:01:01");
+        assert_eq!(Lang::Mg.short_duration(5400), "1\u{a0}h\u{a0}30");
+        assert_eq!(Lang::Mg.removed_ago(7200), "Nesorina 2\u{a0}h lasa izay");
+        assert_eq!(Lang::Mg.moment(at(2026, 10, 17, 21, 45), now), "anio amin'ny 21:45");
+        assert_eq!(Lang::Mg.moment(at(2026, 10, 24, 21, 45), now), "ny 24\u{a0}Okt. amin'ny 21:45");
+        assert_eq!(Lang::Mg.until(at(2026, 10, 24, 9, 0), now), "hatramin'ny 24\u{a0}Okt. amin'ny 09:00");
+        assert_eq!(Lang::Mg.sessions(4), "4\u{a0}fifandraisana");
+    }
+
+    #[test]
+    fn language_buttons_name_each_language_once() {
+        let codes: Vec<_> = Lang::ALL.iter().map(|l| l.code()).collect();
+        assert_eq!(codes, ["FR", "EN", "MG"]);
+        assert_eq!(Lang::Mg.native_name(), "Malagasy");
+    }
+
+    #[test]
+    fn notification_details() {
+        assert_eq!(Lang::Fr.ran_out("aujourd'hui à 14:05"), "Temps écoulé aujourd'hui à 14:05");
+        assert_eq!(Lang::En.more_devices(1), "and 1 more device");
+        assert_eq!(Lang::Fr.more_devices(5), "et 5\u{a0}autres appareils");
+        assert_eq!(Lang::Mg.more_devices(5), "sy fitaovana 5 hafa");
     }
 
     #[test]
@@ -638,7 +842,7 @@ mod tests {
 
     #[test]
     fn errors_are_translated() {
-        for lang in [Lang::Fr, Lang::En] {
+        for lang in Lang::ALL {
             for e in [AddError::EmptyName, AddError::EmptyBoxName, AddError::ZeroDuration, AddError::InvalidMac] {
                 assert!(!lang.add_error(&e).is_empty());
             }
