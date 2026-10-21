@@ -281,6 +281,16 @@ impl RecordingAlerter {
         self.log.lock().unwrap().clone()
     }
 
+    /// The calls that make a sound, leaving out notifications.
+    pub fn sounds(&self) -> Vec<String> {
+        self.calls().into_iter().filter(|c| !c.starts_with("notify: ")).collect()
+    }
+
+    /// Each notification as "title | body".
+    pub fn notifications(&self) -> Vec<String> {
+        self.calls().iter().filter_map(|c| c.strip_prefix("notify: ").map(str::to_owned)).collect()
+    }
+
     pub fn clear(&self) {
         self.log.lock().unwrap().clear();
     }

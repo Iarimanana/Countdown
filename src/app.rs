@@ -184,13 +184,10 @@ impl CountdownApp {
         } else {
             lang.expired_alert(alerts.expired.len())
         };
-        let body = alerts
-            .expired
-            .iter()
-            .chain(&alerts.reminders)
-            .map(describe)
-            .collect::<Vec<_>>()
-            .join("\n");
+        let devices: Vec<&Device> = alerts.expired.iter().chain(&alerts.reminders).collect();
+        // Sent in both modes: it tells which device to look for in the
+        // router, even while the alarm is ringing.
+        self.alerter.notify(&title, &alert_body(lang, &devices, now));
         match self.store.alert_mode {
             AlertMode::Alarm => {
                 self.sound_failed = !self.alerter.start_alarm();
@@ -200,7 +197,6 @@ impl CountdownApp {
                 ctx.send_viewport_cmd(egui::ViewportCommand::Focus);
             }
             AlertMode::Notification => {
-                self.alerter.notify(&title, &body);
                 self.sound_failed = !self.alerter.chime();
             }
         }
@@ -215,14 +211,13 @@ impl CountdownApp {
 
     fn test_alert(&mut self) {
         let now = self.now();
-        let lang = self.lang();
+        self.alerter.notify("Countdown", self.lang().s().test_notification);
         match self.store.alert_mode {
             AlertMode::Alarm => {
                 self.sound_failed = !self.alerter.start_alarm();
                 self.alarm_until = Some(now + TEST_ALARM_SECS);
             }
             AlertMode::Notification => {
-                self.alerter.notify("Countdown", lang.s().test_notification);
                 self.sound_failed = !self.alerter.chime();
             }
         }
@@ -331,8 +326,9 @@ impl CountdownApp {
                 }
                 ui.add_space(8.0);
                 let mut chosen = lang;
-                ui.selectable_value(&mut chosen, Lang::En, "EN").on_hover_text(lang.s().language);
-                ui.selectable_value(&mut chosen, Lang::Fr, "FR").on_hover_text(lang.s().language);
+                for l in Lang::ALL.into_iter().rev() {
+                    ui.selectable_value(&mut chosen, l, l.code()).on_hover_text(lang.s().language);
+                }
                 if chosen != lang {
                     self.store.lang = chosen;
                     self.save();
@@ -661,8 +657,9 @@ impl CountdownApp {
 
             ui.label(RichText::new(t.language).family(theme::bold()));
             ui.horizontal(|ui| {
-                changed |= ui.selectable_value(&mut self.store.lang, Lang::Fr, "Français").changed();
-                changed |= ui.selectable_value(&mut self.store.lang, Lang::En, "English").changed();
+                for l in Lang::ALL {
+                    changed |= ui.selectable_value(&mut self.store.lang, l, l.native_name()).changed();
+                }
             });
             ui.add_space(10.0);
 
@@ -802,13 +799,30 @@ fn device_identity(ui: &mut egui::Ui, p: &Palette, d: &Device) {
     });
 }
 
-/// "Paul (iPhone 13 Pro Max, 3C:22:FB:1A:09:E4)", for notifications.
-fn describe(d: &Device) -> String {
-    if d.box_name.is_empty() {
-        format!("{} ({})", d.name, d.mac)
-    } else {
-        format!("{} ({}, {})", d.name, d.box_name, d.mac)
+/// "Paul — iPhone 13 Pro Max": the name and the router's name for it.
+fn who(d: &Device) -> String {
+    if d.box_name.is_empty() { d.name.clone() } else { format!("{} — {}", d.name, d.box_name) }
+}
+
+/// The notification text: what's needed to find the device in the router.
+/// Windows shows only about four lines, so one device gets a line per
+/// detail, and several get one short line each, cut off after three.
+fn alert_body(lang: Lang, devices: &[&Device], now: u64) -> String {
+    const MAX_LISTED: usize = 3;
+    let mut lines = match devices {
+        [d] => {
+            let mut lines = vec![who(d), format!("MAC {}", d.mac)];
+            if let Status::Expired { expired_at, .. } = d.status {
+                lines.push(lang.ran_out(&lang.moment(local(expired_at), local(now))));
+            }
+            lines
+        }
+        _ => devices.iter().take(MAX_LISTED).copied().map(who).collect(),
+    };
+    if devices.len() > MAX_LISTED {
+        lines.push(lang.more_devices(devices.len() - MAX_LISTED));
     }
+    lines.join("\n")
 }
 
 /// "Fin prévue : aujourd'hui à 21:45", or a prompt to pick a duration.

@@ -4,14 +4,15 @@ A desktop app that keeps track of which devices are on your Wi-Fi and for how lo
 also runs on Linux.
 
 You enter each device's name, its name in your router's admin panel and its MAC address by hand, and choose
-how long it may stay connected. When the time
-runs out, Countdown rings an alarm, or shows a notification with a sound if you prefer. You remove the device
-from your router yourself, then click **Retiré du réseau**. If you haven't done that after a few minutes, the
-alert comes back.
+how long it may stay connected. When the time runs out, Countdown shows a notification with the device's
+details and rings an alarm (or plays a short sound instead, if you prefer). You remove the device from your
+router yourself, then click **Retiré du réseau**. If you haven't done that after a few minutes, the alert
+comes back.
 
 Countdown doesn't connect to your router. It is only a tracker and timer.
 
-The interface is in French by default. Switch to English with **FR / EN** at the top right or in **Réglages**.
+The interface is in French by default. Switch to English or Malagasy with **FR / EN / MG** at the top right, or
+in **Réglages**.
 The app follows your system's light or dark theme.
 
 ## Using it
@@ -61,12 +62,15 @@ Advanced: `Countdown-Setup.exe --silent` installs with default choices and no wi
 
 ## Settings (Réglages)
 
-- **Quand le temps est écoulé:**
+- **Langue:** Français, English or Malagasy.
+- **Quand le temps est écoulé:** a notification always appears and stays on screen. It gives each device's
+  name, its name in the router and its MAC address, and when its time ran out (when several devices run out
+  together, it lists the first three by name). On top of that:
   - *Faire sonner une alarme* (default): beeps for 1 minute and brings the window forward.
-  - *Envoyer une notification avec un son*: a notification that stays on screen, plus a short chime.
+  - *Envoyer une notification avec un son*: a short chime instead of the alarm.
 - **Rappel:** how long to wait before alerting again if a device still hasn't been removed: 2, 5 (default),
   10, 15 or 30 minutes, or never.
-- **Tester l'alerte:** plays the chosen alert, so you can check the volume.
+- **Tester l'alerte:** shows a test notification and plays the chosen sound, so you can check the volume.
 
 Notifications on Windows come from **Countdown**, with its icon. If none appear, open **Settings → System →
 Notifications**, make sure notifications are on, and turn on **Countdown** in the list (it shows up there after
